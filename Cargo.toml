@@ -1,6 +1,6 @@
 [package]
 name = "sortedlist-rs"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Nick Liu <nicku5011@gmail.com>"]
 repository = "https://github.com/nicku12345/sortedlist-rs"

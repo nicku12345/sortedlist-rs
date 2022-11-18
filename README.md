@@ -2,6 +2,8 @@
 
 An implementation of a SortedList data structure in rust.
 
+This repository is under active development. For available features, see the [Usage](#usage) section (and the source!).
+
 ## Usage
 
 ```rust

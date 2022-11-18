@@ -105,6 +105,26 @@ where T: Ord
             });
     }
 
+    /// Query the range sum of the index tree
+    /// It computes the number of elements stored in self._lists\[ql..qr+1].
+    fn _index_tree_sum(&self, ql: usize, qr: usize, opt_node: Option<usize>, opt_l: Option<usize>, opt_r: Option<usize>) -> usize {
+        let node = opt_node.unwrap_or(1);
+        let l = opt_l.unwrap_or(0);
+        let r = opt_r.unwrap_or(self._index_tree_offset - 1);
+
+        if ql<=l && r<=qr {
+            return self._index_tree[node];
+        }
+
+        if qr<l || r<ql {
+            return 0;
+        }
+
+        let m = (l+r)/2;
+        return self._index_tree_sum(ql, qr, Some(2*node), Some(l), Some(m))
+            + self._index_tree_sum(ql, qr, Some(2*node+1), Some(m+1), Some(r));
+    }
+
     /// add val to position k of the underlying array of the segment tree
     fn _index_tree_add(&mut self, i: usize, val: i32) {
         let mut node = Self::DEFAULT_INDEX_TREE_OFFSET + i;
@@ -264,11 +284,65 @@ where T: Ord
         return self._lists_remove(i, j);
     }
 
+    /// Binary searches the given element in the SortedList.
+    /// Returns Ok(i) for exact match, Err(i) otherwise.
+    pub fn binary_search(&self, element: &T) -> Result<usize, usize> {
+        if self._len==0 {
+            return Err(0);
+        }
+
+        let i = self._bisect_right_lists(element);
+        if i==0 {
+            return self._lists[i].binary_search(element);
+        }
+
+        assert!(i>0);
+
+        match self._lists[i].binary_search(element) {
+            Ok(pos) => Ok(pos + self._index_tree_sum(0, i-1, None, None, None)),
+            Err(pos) => Err(pos + self._index_tree_sum(0, i-1, None, None, None)),
+        }
+    }
+
+    /// Returns the number of elements stored in the SortedList.
+    pub fn len(&self) -> usize {
+        self._len
+    }
+
+    /// Returns whether the SortedList is empty.
+    pub fn is_empty(&self) -> bool {
+        self.len()==0
+    }
+
+    /// Returns the last element of the SortedList, i.e. the largest element.
+    pub fn last(&self) -> Option<&T> {
+        if self.len()==0 {
+            return None;
+        }
+        return self._lists.last().unwrap().last();
+    }
+
+    /// Returns the first element of the SortedList, i.e. the smallest element.
+    pub fn first(&self) -> Option<&T> {
+        if self.len()==0 {
+            return None;
+        }
+        return self._lists.first().unwrap().first();
+    }
+
+    /// Returns the element for the given index in the SortedList.
+    pub fn get(&self, index: usize) -> Option<&T> {
+        if self.len()==0 || self.len()<=index {
+            return None;
+        }
+        return Some(self.kth_smallest(index));
+    }
 }
 
 impl<T> Default for SortedList<T>
 where T: Ord
 {
+    /// Creates an empty SortedList
     fn default() -> Self {
         Self::_default()
     }
@@ -278,6 +352,8 @@ impl<T> Index<usize> for SortedList<T>
 where T: Ord
 {
     type Output = T;
+
+    /// Access the SortedList for the given index.
     fn index(&self, index: usize) -> &Self::Output {
         self.kth_smallest(index)
     }
@@ -286,6 +362,7 @@ where T: Ord
 impl<T> From<Vec<T>> for SortedList<T>
 where T: Ord
 {
+    /// Creates a SortedList from a Vec
     fn from(array: Vec<T>) -> Self {
         let mut sorted_list = SortedList::default();
         for x in array {
@@ -302,7 +379,6 @@ where T: Ord + Debug
         fmt::Debug::fmt(&self._flat(), f)
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -325,6 +401,8 @@ mod tests {
 
     #[test]
     fn random_tests() {
+        // Run tests with randomized inputs
+
         let test_size = 100_000;
         let test_op = 5_000;
 
@@ -342,6 +420,7 @@ mod tests {
         // actual sorted list
         let mut sorted_list = SortedList::from(array);
 
+        // Data setup
         for _ in 0..test_op {
             let x = rng.gen::<i32>();
             
@@ -357,14 +436,45 @@ mod tests {
             sorted_list.insert(x);
         }
 
+        // Acutal tests
         for _ in 0..test_op+test_size {
-            // remove a random index
+            // Test: remove a random index, sorted order is maintained
             let idx = rng.gen_range(0..copy.len());
-
-            let expected = copy.remove(idx);
+            let expect = copy.remove(idx);
             let actual = sorted_list.remove(idx);
+            assert_eq!(expect, actual);
 
-            assert_eq!(expected, actual);
+            // Test: first
+            let expect = copy.first();
+            let actual = sorted_list.first();
+            assert_eq!(expect, actual);
+
+            // Test: last
+            let expect = copy.last();
+            let actual = sorted_list.last();
+            assert_eq!(expect, actual);
+
+            // Test: binary_search
+            let x = rng.gen::<i32>();
+            let actual = sorted_list.binary_search(&x);
+            let expect = copy.binary_search(&x);
+            assert_eq!(expect, actual);
+
+            // Test: get
+            let index = rng.gen_range(0..copy.len() + 2000);
+            let actual = sorted_list.get(index);
+            let expect = copy.get(index);
+            assert_eq!(expect, actual);
+
+            // Test: len
+            let actual = sorted_list.len();
+            let expect = copy.len();
+            assert_eq!(expect, actual);
+
+            // Test: is_empty
+            let actual = sorted_list.is_empty();
+            let expect = copy.is_empty();
+            assert_eq!(expect, actual);
         }
     }
 
@@ -373,27 +483,25 @@ mod tests {
         let array = vec![90, 19, 25];
         let mut sorted_list = SortedList::from(array);
 
-        println!("{:?}", sorted_list);
-        // [19, 25, 90]
-
         sorted_list.insert(100);
         sorted_list.insert(1);
         sorted_list.insert(20);
-        println!("{:?}", sorted_list);
-        // [1, 19, 20, 25, 90, 100]
 
         let x = sorted_list.remove(3);
-        println!("{}", x);
-        // 25
-        // removed the 3-rd smallest (0-indexed) element.
+        assert_eq!(25, x);
+        assert_eq!(&20, sorted_list.kth_smallest(2));
+        assert_eq!(20, sorted_list[2]);
+    }
 
-        println!("{}", sorted_list.kth_smallest(2));
-        // 20
+    #[test]
+    fn binary_search_test() {
+        let array = vec![20; 100_000];
+        let sorted_list = SortedList::from(array);
+        let x = 50;
 
-        println!("{}", sorted_list[2]);
-        // 20
+        let actual = sorted_list.binary_search(&x);
+        let expected: Result<usize, usize> = Err(100_000);
 
-        println!("{:?}", sorted_list);
-        // [1, 19, 20, 90, 100]
+        assert_eq!(actual, expected);
     }
 }

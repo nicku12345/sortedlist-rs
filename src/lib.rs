@@ -53,7 +53,6 @@ where T: Ord
         };
 
         assert!(left.min(right) < usize::MAX);
-
         if left<right {
             // collapse to k-1
             let mut removed = self._lists.remove(i);
@@ -259,6 +258,11 @@ where T: Ord
 impl<T> SortedList<T>
 where T: Ord
 {
+    /// Creates an empty SortedList.
+    pub fn new() -> Self {
+        Self::_default()
+    }
+
     /// Find the k-th smallest (0-indexed) element in the SortedList.
     pub fn kth_smallest(&self, k: usize) -> &T {
         // k is 0-indexed
@@ -342,7 +346,7 @@ where T: Ord
 impl<T> Default for SortedList<T>
 where T: Ord
 {
-    /// Creates an empty SortedList
+    /// Creates an empty SortedList.
     fn default() -> Self {
         Self::_default()
     }

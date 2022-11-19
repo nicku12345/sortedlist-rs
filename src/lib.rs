@@ -18,9 +18,9 @@ impl<T> SortedList<T>
 where T: Ord
 {
     const DEFAULT_INDEX_TREE_OFFSET: usize = 1<<5;
-    const DEFAULT_LOAD_FACTOR: usize = 5_000;
-    const DEFAULT_UPPER_LOAD_FACTOR: usize = 10_000;
-    const DEFAULT_LOWER_LOAD_FACTOR: usize = 2_500;
+    const DEFAULT_LOAD_FACTOR: usize = 1_024;
+    const DEFAULT_UPPER_LOAD_FACTOR: usize = 2_048;
+    const DEFAULT_LOWER_LOAD_FACTOR: usize = 512;
 
     /// Instantiate an empty SortedList.
     fn _default() -> Self {
@@ -93,11 +93,11 @@ where T: Ord
 
         (0..self._lists.len())
             .for_each(|node| {
-                self._index_tree[node + Self::DEFAULT_INDEX_TREE_OFFSET] = self._lists[node].len();
+                self._index_tree[node + self._index_tree_offset] = self._lists[node].len();
 
             });
 
-        (1..Self::DEFAULT_INDEX_TREE_OFFSET)
+        (1..self._index_tree_offset)
             .rev()
             .for_each(|node| {
                 self._index_tree[node] = self._index_tree[2*node] + self._index_tree[2*node+1];
@@ -126,7 +126,7 @@ where T: Ord
 
     /// add val to position k of the underlying array of the segment tree
     fn _index_tree_add(&mut self, i: usize, val: i32) {
-        let mut node = Self::DEFAULT_INDEX_TREE_OFFSET + i;
+        let mut node = self._index_tree_offset + i;
         if val>=0 {
             self._index_tree[node] += val as usize;
         } else {

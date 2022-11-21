@@ -1,5 +1,5 @@
 use core::fmt;
-use std::{ops::Index, fmt::Debug};
+use std::{ops::Index, fmt::Debug, vec::IntoIter};
 
 
 pub struct SortedList<T>
@@ -363,16 +363,43 @@ where T: Ord
     }
 }
 
+impl<T> From<IntoIter<T>> for SortedList<T>
+where T: Ord
+{
+    /// Creates a SortedList from an IntoIter
+    fn from(iter: IntoIter<T>) -> Self {
+        let mut array: Vec<T> = iter.collect();
+        array.sort();
+
+        // directly construct sorted_list's internals, i.e. _lists, _len
+        // This method is way faster than inserting elements one by one
+        let sorted_iter = array.into_iter();
+        let mut sorted_list = Self::default();
+        sorted_list._len = sorted_iter.len();
+
+        sorted_list._lists.push(vec![]);
+        let mut last_list_size = 0;
+
+        for element in sorted_iter {
+            sorted_list._lists.last_mut().unwrap().push(element);
+            last_list_size += 1;
+            if last_list_size == sorted_list._load_factor {
+                last_list_size = 0;
+                sorted_list._lists.push(vec![]);
+            }
+        }
+
+        sorted_list._rebuild_index_tree();
+        sorted_list
+    }
+}
+
 impl<T> From<Vec<T>> for SortedList<T>
 where T: Ord
 {
     /// Creates a SortedList from a Vec
     fn from(array: Vec<T>) -> Self {
-        let mut sorted_list = SortedList::default();
-        for x in array {
-            sorted_list.insert(x);
-        }
-        sorted_list
+        Self::from(array.into_iter())
     }
 }
 

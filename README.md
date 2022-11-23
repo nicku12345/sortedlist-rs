@@ -1,8 +1,8 @@
 # SortedList
 
-An implementation of a SortedList data structure in rust.
+A fast sorted list data structure in rust.
 
-This repository is under active development. For available features, see the [Usage](#usage) section (and the source!).
+This repository is under active development with numerous available features. See the [Usage](#usage) and the [Documentation](#documentation).
 
 ## Usage
 
@@ -33,3 +33,7 @@ println!("{}", sorted_list[2]);
 println!("{:?}", sorted_list);
 // [1, 19, 20, 90, 100]
 ```
+
+## Documentation
+
+https://docs.rs/sortedlist-rs/latest/sortedlist_rs/

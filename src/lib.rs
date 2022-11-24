@@ -270,6 +270,15 @@ where T: Ord
         return self._at(i, j);
     }
 
+    /// Clears the SortedList.
+    pub fn clear(&mut self) {
+        self._lists.clear();
+        self._index_tree.clear();
+        self._index_tree.resize(2*Self::DEFAULT_INDEX_TREE_OFFSET, 0);
+        self._index_tree_offset = Self::DEFAULT_INDEX_TREE_OFFSET;
+        self._len = 0;
+    }
+
     /// Insert `element` into the SortedList.
     pub fn insert(&mut self, element: T) {
         if self._len==0 {
@@ -308,6 +317,14 @@ where T: Ord
         }
     }
 
+    /// Returns whether the SortedList contains a specific element.
+    pub fn contains(&self, element: &T) -> bool {
+        match self.binary_search(element) {
+            Ok(_) => true,
+            _ => false,
+        }
+    }
+
     /// Returns the number of elements stored in the SortedList.
     pub fn len(&self) -> usize {
         self._len
@@ -340,6 +357,23 @@ where T: Ord
             return None;
         }
         return Some(self.kth_smallest(index));
+    }
+
+    /// Returns a flattened view of the SortedList.
+    pub fn flatten(&self) -> Vec<&T> {
+        self._flat()
+    }
+
+    /// Convert `self` into a new `Vec`.
+    pub fn to_vec(&self) -> Vec<T>
+    where T: Clone
+    {
+        self._lists
+            .iter()
+            .fold(vec![], |mut cur, list| {
+                cur.append(&mut list.to_vec());
+                cur
+            })
     }
 }
 
@@ -403,6 +437,33 @@ where T: Ord
     }
 }
 
+impl<T> From<&[T]> for SortedList<T>
+where T: Ord + Clone
+{
+    /// Allocate a SortedList and fill it by cloning `array`'s items.
+    fn from(array: &[T]) -> Self {
+        Self::from(Vec::from(array))
+    }
+}
+
+impl<T> From<&mut [T]> for SortedList<T>
+where T: Ord + Clone
+{
+    /// Allocate a SortedList and fill it by cloning `array`'s items.
+    fn from(array: &mut [T]) -> Self {
+        Self::from(Vec::from(array))
+    }
+}
+
+impl<T, const N: usize> From<[T;N]> for SortedList<T>
+where T: Ord
+{
+    /// Allocate a SortedList and move `array`'s item into it.
+    fn from(array: [T;N]) -> Self {
+        Self::from(Vec::from(array))
+    }
+}
+
 impl<T> fmt::Debug for SortedList<T>
 where T: Ord + Debug
 {
@@ -413,7 +474,7 @@ where T: Ord + Debug
 
 #[cfg(test)]
 mod tests {
-    use rand::{thread_rng, Rng};
+    use rand::{thread_rng, Rng, seq::SliceRandom};
 
     use crate::SortedList;
 
@@ -534,5 +595,72 @@ mod tests {
         let expected: Result<usize, usize> = Err(100_000);
 
         assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn contains_test() {
+        let mut sorted_list = SortedList::from([10; 10_000]);
+        assert!(sorted_list.contains(&10));
+        assert!(!sorted_list.contains(&9));
+
+        sorted_list.insert(9);
+        assert!(sorted_list.contains(&9));
+
+        sorted_list.insert(11);
+        assert!(sorted_list.contains(&11));
+    }
+
+    #[test]
+    fn clear_test() {
+        // arrange
+        let mut sorted_list_1 = SortedList::from([10; 10_000]);
+        let mut sorted_list_2 = SortedList::from([1, 3, 4, 2, 0]);
+
+        // act
+        sorted_list_1.clear();
+        sorted_list_2.clear();
+
+        // assert
+        for sorted_list in [sorted_list_1, sorted_list_2] {
+            assert!(sorted_list._lists.is_empty());
+            for val in &sorted_list._index_tree {
+                assert!(val == &0);
+            }
+            assert!(sorted_list._index_tree.len() == 2*sorted_list._index_tree_offset);
+        }
+    }
+
+    #[test]
+    fn to_vec_test() {
+        // arrange
+        let mut rng = thread_rng();
+        let mut array: Vec<usize> = (0..5_000).collect();
+        array.shuffle(&mut rng);
+
+        let sorted_list = SortedList::from(array);
+
+        // act
+        let to_vec = sorted_list.to_vec();
+
+        // assert
+        assert_eq!((0..5_000).collect::<Vec<usize>>(), to_vec);
+    }
+
+    #[test]
+    fn flatten_test() {
+        // arrange
+        let mut rng = thread_rng();
+        let mut array: Vec<usize> = (0..5_000).collect();
+        array.shuffle(&mut rng);
+
+        let sorted_list = SortedList::from(array);
+
+        // act
+        let flatten = sorted_list.flatten();
+
+        // assert
+        for i in 0..5_000 {
+            assert_eq!(flatten[i], &i);
+        }
     }
 }

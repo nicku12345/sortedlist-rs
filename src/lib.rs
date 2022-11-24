@@ -89,6 +89,7 @@ where T: Ord
             self._index_tree_offset *= 2;
         }
 
+        self._index_tree.fill(0);
         self._index_tree.resize(2*self._index_tree_offset, 0);
 
         (0..self._lists.len())
@@ -304,12 +305,10 @@ where T: Ord
             return Err(0);
         }
 
-        let i = self._bisect_right_lists(element);
+        let i: usize = self._bisect_right_lists(element);
         if i==0 {
             return self._lists[i].binary_search(element);
         }
-
-        assert!(i>0);
 
         match self._lists[i].binary_search(element) {
             Ok(pos) => Ok(pos + self._index_tree_sum(0, i-1, None, None, None)),

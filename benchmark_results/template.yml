@@ -1,0 +1,26 @@
+Title:
+  SortedList ${version} - Benchmark Tests and Results
+Description:
+  This benchmark result is generated using Criterion.rs.
+Tests:
+  Binary search random element:
+    Description:
+      Given a sorted list containing `n` random i32 numbers, binary searches a random number in the sorted list.
+  Get random element:
+    Description:
+      Given a sorted list containing `n` random i32 numbers, access the sorted list at a random index.
+  Insert random element:
+    Description:
+      Given a sorted list containing `n` random i32 numbers, access the sorted list at a random index.
+  Remove first element:
+    Description:
+      Given a sorted list containing `n` random i32 numbers, remove the first element till empty.
+  Remove last element:
+    Description:
+      Given a sorted list containing `n` random i32 numbers, remove the last element till empty.
+  Remove middle element:
+    Description:
+      Given a sorted list containing `n` random i32 numbers, remove the middle element till empty.
+  Remove random element:
+    Description:
+      Given a sorted list containing `n` random i32 numbers, remove a random element from the list till empty.

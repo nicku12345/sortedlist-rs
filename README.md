@@ -2,7 +2,11 @@
 
 A fast sorted list data structure in rust.
 
-This repository is under active development with numerous available features. See the [Usage](#usage) and the [Documentation](#documentation).
+This repository is under active development with numerous available  features. See the [Usage](#usage) and the [Documentation](#documentation).
+
+## Benchmark Tests and Results
+
+- [v0.2.1](./benchmark_results/v0.2.1/result.md)
 
 ## Usage
 

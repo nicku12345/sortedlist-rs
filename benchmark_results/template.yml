@@ -11,7 +11,7 @@ Tests:
       Given a sorted list containing `n` random i32 numbers, access the sorted list at a random index.
   Insert random element:
     Description:
-      Given a sorted list containing `n` random i32 numbers, access the sorted list at a random index.
+      Insert `n` random i32 numbers to an empty sorted list.
   Remove first element:
     Description:
       Given a sorted list containing `n` random i32 numbers, remove the first element till empty.

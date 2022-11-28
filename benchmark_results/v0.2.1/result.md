@@ -18,7 +18,7 @@ This benchmark result is generated using Criterion.rs.
 ![img](./plots/get%20random%20element.svg)
 
 ## Insert random element
-**Description**: Given a sorted list containing `n` random i32 numbers, access the sorted list at a random index.
+**Description**: Insert `n` random i32 numbers to an empty sorted list.
 ![img](./plots/insert%20random%20element.svg)
 
 ## Remove first element

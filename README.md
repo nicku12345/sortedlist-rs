@@ -1,8 +1,8 @@
 # SortedList
 
-A fast sorted list data structure in rust.
+A fast sorted list data structure in rust, inspired by the python library [Sorted Containers](https://grantjenks.com/docs/sortedcontainers/)
 
-This repository is under active development with numerous available  features. See the [Usage](#usage) and the [Documentation](#documentation).
+This repository is a work in progress. See [Usage](#usage) and [Documentation](#documentation) for available features.
 
 ## Benchmark Tests and Results
 
@@ -11,6 +11,8 @@ This repository is under active development with numerous available  features. S
 ## Usage
 
 ```rust
+use sortedlist_rs::SortedList;
+
 let array = vec![90, 19, 25];
 let mut sorted_list = SortedList::from(array);
 
@@ -24,15 +26,12 @@ println!("{:?}", sorted_list);
 // [1, 19, 20, 25, 90, 100]
 
 let x = sorted_list.remove(3);
-println!("{}", x);
-// 25
+assert_eq!(25, x);
 // removed the 3-rd smallest (0-indexed) element.
 
-println!("{}", sorted_list.kth_smallest(2));
-// 20
+assert_eq!(&20, sorted_list.kth_smallest(2));
 
-println!("{}", sorted_list[2]);
-// 20
+assert_eq!(20, sorted_list[2]);
 
 println!("{:?}", sorted_list);
 // [1, 19, 20, 90, 100]

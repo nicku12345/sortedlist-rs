@@ -2,6 +2,36 @@ use core::fmt;
 use std::{ops::Index, fmt::Debug, vec::IntoIter};
 
 
+/// A sorted list data structure
+/// 
+/// # Example
+/// 
+/// ```
+/// use sortedlist_rs::SortedList;
+/// 
+/// let array = vec![90, 19, 25];
+/// let mut sorted_list = SortedList::from(array);
+/// 
+/// println!("{:?}", sorted_list);
+/// // [19, 25, 90]
+/// 
+/// sorted_list.insert(100);
+/// sorted_list.insert(1);
+/// sorted_list.insert(20);
+/// println!("{:?}", sorted_list);
+/// // [1, 19, 20, 25, 90, 100]
+/// 
+/// let x = sorted_list.remove(3);
+/// assert_eq!(25, x);
+/// // removed the 3-rd smallest (0-indexed) element.
+/// 
+/// assert_eq!(&20, sorted_list.kth_smallest(2));
+/// 
+/// assert_eq!(20, sorted_list[2]);
+/// 
+/// println!("{:?}", sorted_list);
+/// // [1, 19, 20, 90, 100]
+/// ```
 pub struct SortedList<T>
 where T: Ord
 {
@@ -14,6 +44,7 @@ where T: Ord
     _len: usize,
 }
 
+/// Private method implementations
 impl<T> SortedList<T>
 where T: Ord
 {
@@ -256,15 +287,33 @@ where T: Ord
 }
 
 
+/// Public method implementations
 impl<T> SortedList<T>
 where T: Ord
 {
     /// Creates an empty SortedList.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use sortedlist_rs::SortedList;
+    /// 
+    /// let sorted_list: SortedList<i32> = SortedList::new();
+    /// ```
     pub fn new() -> Self {
         Self::_default()
     }
 
     /// Find the k-th smallest (0-indexed) element in the SortedList.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use sortedlist_rs::SortedList;
+    /// 
+    /// let sorted_list = SortedList::from([10, 2, 3]);
+    /// assert_eq!(&3, sorted_list.kth_smallest(1));
+    /// ```
     pub fn kth_smallest(&self, k: usize) -> &T {
         // k is 0-indexed
         let (i,j) = self._locate_kth_element(k);
@@ -272,6 +321,18 @@ where T: Ord
     }
 
     /// Clears the SortedList.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use sortedlist_rs::SortedList;
+    /// 
+    /// let mut sorted_list = SortedList::from([10, 2, 3]);
+    /// sorted_list.clear();
+    /// 
+    /// assert_eq!(0, sorted_list.len());
+    /// assert_eq!(true, sorted_list.is_empty());
+    /// ```
     pub fn clear(&mut self) {
         self._lists.clear();
         self._index_tree.clear();
@@ -281,6 +342,21 @@ where T: Ord
     }
 
     /// Insert `element` into the SortedList.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use sortedlist_rs::SortedList;
+    /// 
+    /// let mut sorted_list = SortedList::new();
+    /// sorted_list.insert(10);
+    /// sorted_list.insert(6);
+    /// sorted_list.insert(99);
+    /// 
+    /// assert_eq!(3, sorted_list.len());
+    /// assert_eq!(6, sorted_list[0]);
+    /// assert_eq!(10, sorted_list[1]);
+    /// ```
     pub fn insert(&mut self, element: T) {
         if self._len==0 {
             self._lists.push(vec![]);
@@ -293,6 +369,17 @@ where T: Ord
     }
 
     /// Pops the k-th smallest (0-indexed) element from the SortedList.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use sortedlist_rs::SortedList;
+    /// 
+    /// let mut sorted_list = SortedList::from([10, 2, 99, 20, 30]);
+    /// let popped = sorted_list.remove(3);
+    /// 
+    /// assert_eq!(30, popped);
+    /// ```
     pub fn remove(&mut self, k: usize) -> T {
         let (i,j) = self._locate_kth_element(k);
         return self._lists_remove(i, j);
@@ -300,6 +387,20 @@ where T: Ord
 
     /// Binary searches the given element in the SortedList.
     /// Returns Ok(i) for exact match, Err(i) otherwise.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use sortedlist_rs::SortedList;
+    /// 
+    /// let mut sorted_list = SortedList::from([10, 2, 99, 20, 30]);
+    /// 
+    /// let result = sorted_list.binary_search(&30);
+    /// assert_eq!(Ok(3), result);
+    /// 
+    /// let result = sorted_list.binary_search(&90);
+    /// assert_eq!(Err(4), result);
+    /// ```
     pub fn binary_search(&self, element: &T) -> Result<usize, usize> {
         if self._len==0 {
             return Err(0);
@@ -317,6 +418,17 @@ where T: Ord
     }
 
     /// Returns whether the SortedList contains a specific element.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use sortedlist_rs::SortedList;
+    /// 
+    /// let sorted_list = SortedList::from([10, 2, 99, 20]);
+    /// 
+    /// assert_eq!(true, sorted_list.contains(&10));
+    /// assert_eq!(false, sorted_list.contains(&90));
+    /// ```
     pub fn contains(&self, element: &T) -> bool {
         match self.binary_search(element) {
             Ok(_) => true,
@@ -325,16 +437,48 @@ where T: Ord
     }
 
     /// Returns the number of elements stored in the SortedList.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use sortedlist_rs::SortedList;
+    /// 
+    /// let sorted_list = SortedList::from([10, 2, 99, 20]);
+    /// 
+    /// assert_eq!(4, sorted_list.len());
+    /// ```
     pub fn len(&self) -> usize {
         self._len
     }
 
     /// Returns whether the SortedList is empty.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use sortedlist_rs::SortedList;
+    /// 
+    /// let mut sorted_list: SortedList<i32> = SortedList::new();
+    /// assert_eq!(true, sorted_list.is_empty());
+    /// 
+    /// sorted_list.insert(1);
+    /// assert_eq!(false, sorted_list.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.len()==0
     }
 
     /// Returns the last element of the SortedList, i.e. the largest element.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use sortedlist_rs::SortedList;
+    /// 
+    /// let sorted_list = SortedList::from([10, 2, 99, 20]);
+    /// 
+    /// assert_eq!(Some(&99), sorted_list.last());
+    /// ```
     pub fn last(&self) -> Option<&T> {
         if self.len()==0 {
             return None;
@@ -343,6 +487,16 @@ where T: Ord
     }
 
     /// Returns the first element of the SortedList, i.e. the smallest element.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use sortedlist_rs::SortedList;
+    /// 
+    /// let sorted_list = SortedList::from([10, 2, 99, 20]);
+    /// 
+    /// assert_eq!(Some(&2), sorted_list.first());
+    /// ```
     pub fn first(&self) -> Option<&T> {
         if self.len()==0 {
             return None;
@@ -351,6 +505,16 @@ where T: Ord
     }
 
     /// Returns the element for the given index in the SortedList.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use sortedlist_rs::SortedList;
+    /// 
+    /// let sorted_list = SortedList::from([10, 2, 99, 20]);
+    /// 
+    /// assert_eq!(Some(&20), sorted_list.get(2));
+    /// ```
     pub fn get(&self, index: usize) -> Option<&T> {
         if self.len()==0 || self.len()<=index {
             return None;
@@ -359,11 +523,33 @@ where T: Ord
     }
 
     /// Returns a flattened view of the SortedList.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use sortedlist_rs::SortedList;
+    /// 
+    /// let sorted_list = SortedList::from([10, 2, 99, 20]);
+    /// let flattened = sorted_list.flatten();
+    /// 
+    /// assert_eq!(vec![&2, &10, &20, &99], flattened);
+    /// ```
     pub fn flatten(&self) -> Vec<&T> {
         self._flat()
     }
 
     /// Convert `self` into a new `Vec`.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use sortedlist_rs::SortedList;
+    /// 
+    /// let sorted_list = SortedList::from([10, 2, 99, 20]);
+    /// let v = sorted_list.to_vec();
+    /// 
+    /// assert_eq!(vec![2, 10, 20, 99], v);
+    /// ```
     pub fn to_vec(&self) -> Vec<T>
     where T: Clone
     {
@@ -391,6 +577,16 @@ where T: Ord
     type Output = T;
 
     /// Access the SortedList for the given index.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use sortedlist_rs::SortedList;
+    /// 
+    /// let sorted_list = SortedList::from([20, 2, 10, 99, 50, 32]);
+    /// 
+    /// assert_eq!(32, sorted_list[3]);
+    /// ```
     fn index(&self, index: usize) -> &Self::Output {
         self.kth_smallest(index)
     }
@@ -660,6 +856,29 @@ mod tests {
         // assert
         for i in 0..5_000 {
             assert_eq!(flatten[i], &i);
+        }
+    }
+
+    #[test]
+    fn complex_data_structure_test() {
+        // arrange
+        let mut array: Vec<Vec<i32>> = vec![];
+        for i in (0..2000).rev() {
+            array.push((0..i+1).collect());
+        }
+
+        // act
+        let sorted_list = SortedList::from(array);
+
+        // assert
+        for i in 0..2000 {
+            let actual: &Vec<i32> = &sorted_list[i];
+            let expected = (0..i+1).map(|x| x as i32).collect::<Vec<i32>>();
+
+            assert_eq!(i+1, actual.len());
+            for j in 0..actual.len() {
+                assert_eq!(actual[j], expected[j]);
+            }
         }
     }
 }

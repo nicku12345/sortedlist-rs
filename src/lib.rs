@@ -157,8 +157,8 @@ where
         }
 
         let m = (l + r) / 2;
-        return self._index_tree_sum(ql, qr, Some(2 * node), Some(l), Some(m))
-            + self._index_tree_sum(ql, qr, Some(2 * node + 1), Some(m + 1), Some(r));
+        self._index_tree_sum(ql, qr, Some(2 * node), Some(l), Some(m))
+            + self._index_tree_sum(ql, qr, Some(2 * node + 1), Some(m + 1), Some(r))
     }
 
     /// add val to position k of the underlying array of the segment tree
@@ -195,7 +195,7 @@ where
             self._index_tree_add(i, -1);
         }
 
-        return removed;
+        removed
     }
 
     /// Insert `element` into self._lists\[i]. It is assumed that self._lists\[i] is the correct insert position.
@@ -243,7 +243,7 @@ where
             }
         }
 
-        return lo;
+        lo
     }
 
     /// Returns (i,j) such that self._lists\[i]\[j] is the k-th element (0-indexed) of the SortedList.
@@ -259,7 +259,7 @@ where
         let mut node: usize = 1;
         while !is_leaf_node(node) {
             if self._index_tree[2 * node] >= cnt {
-                node = 2 * node;
+                node *= 2;
             } else {
                 cnt -= self._index_tree[2 * node];
                 node = 2 * node + 1;
@@ -267,12 +267,12 @@ where
         }
 
         // return values are 0-indexed
-        return (node - self._index_tree_offset, cnt - 1);
+        (node - self._index_tree_offset, cnt - 1)
     }
 
     /// Retrieve an immutable reference of self._lists\[i]\[j].
     fn _at(&self, i: usize, j: usize) -> &T {
-        return &self._lists[i][j];
+        &self._lists[i][j]
     }
 
     /// Returns a flattened view of the SortedList.
@@ -383,7 +383,7 @@ where
     /// ```
     pub fn remove(&mut self, k: usize) -> T {
         let (i, j) = self._locate_kth_element(k);
-        return self._lists_remove(i, j);
+        self._lists_remove(i, j)
     }
 
     /// Binary searches the given element in the SortedList.
@@ -431,10 +431,7 @@ where
     /// assert_eq!(false, sorted_list.contains(&90));
     /// ```
     pub fn contains(&self, element: &T) -> bool {
-        match self.binary_search(element) {
-            Ok(_) => true,
-            _ => false,
-        }
+        self.binary_search(element).is_ok()
     }
 
     /// Returns the number of elements stored in the SortedList.
@@ -481,7 +478,7 @@ where
     /// assert_eq!(Some(&99), sorted_list.last());
     /// ```
     pub fn last(&self) -> Option<&T> {
-        if self.len() == 0 {
+        if self.is_empty() {
             return None;
         }
         return self._lists.last().unwrap().last();
@@ -499,7 +496,7 @@ where
     /// assert_eq!(Some(&2), sorted_list.first());
     /// ```
     pub fn first(&self) -> Option<&T> {
-        if self.len() == 0 {
+        if self.is_empty() {
             return None;
         }
         return self._lists.first().unwrap().first();
@@ -517,7 +514,7 @@ where
     /// assert_eq!(Some(&20), sorted_list.get(2));
     /// ```
     pub fn get(&self, index: usize) -> Option<&T> {
-        if self.len() == 0 || self.len() <= index {
+        if self.is_empty() || self.len() <= index {
             return None;
         }
         return Some(self.kth_smallest(index));

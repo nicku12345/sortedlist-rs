@@ -360,6 +360,7 @@ where
     /// ```
     pub fn insert(&mut self, element: T) {
         if self._len == 0 {
+            self._lists.clear();
             self._lists.push(vec![]);
             self._lists_insert(0, element);
             return;
@@ -882,5 +883,14 @@ mod tests {
                 assert_eq!(actual[j], expected[j]);
             }
         }
+    }
+    
+    #[test]
+    fn break_case_insert_after_lst_has_been_clean() {
+        let mut lst = SortedList::<usize>::new();
+        lst.insert(3);
+        lst.remove(0);
+        lst.insert(1);
+        lst.insert(5);
     }
 }

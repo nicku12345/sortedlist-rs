@@ -887,8 +887,6 @@ mod tests {
     
     #[test]
     fn break_case_insert_after_lst_has_been_clean() {
-        let mut temp = Vec::<usize>::new();
-        temp.clear();
         let mut lst = SortedList::<usize>::new();
         lst.insert(3);
         lst.remove(0);

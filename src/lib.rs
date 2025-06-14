@@ -558,6 +558,26 @@ where
             cur
         })
     }
+
+    /// Returns an iterator over the elements of the SortedList.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use sortedlist_rs::SortedList;
+    ///
+    /// let sorted_list = SortedList::from([10, 2, 99, 20]);
+    /// let mut iterator = sorted_list.iter();
+    /// 
+    /// assert_eq!(Some(&2), iterator.next());
+    /// assert_eq!(Some(&10), iterator.next());
+    /// assert_eq!(Some(&20), iterator.next());
+    /// assert_eq!(Some(&99), iterator.next());
+    /// assert_eq!(None, iterator.next());
+    /// 
+    pub fn iter(&self) -> impl Iterator<Item = &T> {
+        self._lists.iter().flat_map(|list| list.iter())
+    }
 }
 
 impl<T> Default for SortedList<T>
